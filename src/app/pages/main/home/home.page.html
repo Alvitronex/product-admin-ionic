@@ -10,6 +10,7 @@
     color="secondary"
     class="d-flex-center ion-text-center"
     *ngIf="!loading && products.length"
+    style="box-shadow: 100px"
   >
     <div>
       <h5>{{products.length}}</h5>
@@ -21,9 +22,21 @@
     </div>
   </ion-card>
 
+  <!-- === Main Button PDF === -->
+  <ion-button
+    color="warning"
+    shape="round"
+    (click)="generatePDF()"
+    mode="ios"
+    *ngIf="!loading && products.length"
+  >
+    <ion-icon slot="start" name="download-outline"></ion-icon>
+    <ion-label>PDF</ion-label>
+  </ion-button>
+
   <!-- ======= Productos ======= -->
-  <ion-list *ngIf="!loading">
-    <ion-item-sliding class="product-item" *ngFor="let p of products">
+  <ion-list *ngIf="!loading && displayedProducts.length>0">
+    <ion-item-sliding class="product-item" *ngFor="let p of displayedProducts">
       <ion-item>
         <ion-avatar slot="start">
           <img [src]="p.image" />
@@ -54,9 +67,46 @@
         <ion-item-option (click)="confirmDeleteProduct(p)" color="danger">
           <ion-icon class="option-btn" name="trash-outline"></ion-icon>
         </ion-item-option>
+        <!-- ==== Generar PDF ==== -->
+        <ion-item-option (click)="generatePDF(p)" color="warning">
+          <ion-icon class="option-btn" name="document-text-outline"></ion-icon>
+        </ion-item-option>
       </ion-item-options>
     </ion-item-sliding>
   </ion-list>
+
+  <!-- ======= Paginador ======= -->
+  <ion-grid *ngIf="!loading && products.length > 0">
+    <ion-row class="ion-justify-content-center">
+      <ion-col size="auto">
+        <ion-button
+          fill="clear"
+          (click)="prevPage()"
+          [disabled]="currentPage === 1"
+        >
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+      <ion-col size="auto" *ngFor="let page of pages">
+        <ion-button
+          fill="clear"
+          [color]="page === currentPage ? 'primary' : 'medium'"
+          (click)="goToPage(page)"
+        >
+          {{ page }}
+        </ion-button>
+      </ion-col>
+      <ion-col size="auto">
+        <ion-button
+          fill="clear"
+          (click)="nextPage()"
+          [disabled]="currentPage === totalPages"
+        >
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 
   <!-- ======= Loading =======-->
   <ion-list *ngIf="loading">
@@ -85,9 +135,12 @@
   </div>
 
   <!-- ======= NUevo Producto ======= -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" style="right: 25px">
     <ion-fab-button (click)="addUpdateProduct()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+  <!-- <ion-infinite-scroll (ionInfinite)="loadMoreData($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll> -->
 </ion-content>

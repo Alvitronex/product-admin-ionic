@@ -2,7 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, AlertOptions, LoadingController, ModalController, ModalOptions, ToastController, ToastOptions } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-
+import * as pdfMake from 'pdfmake/build/pdfmake';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 @Injectable({
   providedIn: 'root'
 })
@@ -76,4 +77,15 @@ async presentAlert(opts?: AlertOptions) {
   dismissModal(data?: any) {
     return this.modaCtrl.dismiss(data);
   }
+
+  // === PDF MAKEPDF ===
+
+
+  
+  pdfMake() {
+    
+    return (pdfMake as any).vfs = pdfFonts.pdfMake.vfs;
+  }
+
+ 
 }

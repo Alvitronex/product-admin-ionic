@@ -102,5 +102,7 @@ export class FirebaseService {
   deleteFile(path: string) {
     return+ deleteObject(ref(getStorage(), path));
   }
+
+ 
 }
  

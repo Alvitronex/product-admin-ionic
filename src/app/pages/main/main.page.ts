@@ -12,24 +12,26 @@ import { UtilsService } from 'src/app/services/utils.service';
 export class MainPage implements OnInit {
 
   pages = [
-    { title: 'Inicio', url: '/main/home', icon: 'home-outline'},
-    { title: 'Perfil', url: '/main/profile', icon: 'person-outline'},
+    { title: 'Inicio', url: '/main/home', icon: 'home-outline' },
+    { title: 'Perfil', url: '/main/profile', icon: 'person-outline' },
+    { title: 'Panel Administrativo', url: '/main/panel', icon: 'people-outline' },
+
   ]
 
   router = inject(Router);
   firebaseSvc = inject(FirebaseService);
   utilsSvc = inject(UtilsService);
-  currentPath: string ='';
+  currentPath: string = '';
 
   ngOnInit() {
     this.router.events.subscribe((event: any) => {
-      if(event?.url) this.currentPath  = event.url;
-        
+      if (event?.url) this.currentPath = event.url;
+
 
     })
   }
 
-  user(): User  {
+  user(): User {
     return this.utilsSvc.getFromLocalStorage('user');
   }
 
