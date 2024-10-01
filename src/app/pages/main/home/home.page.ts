@@ -6,18 +6,19 @@ import { UtilsService } from 'src/app/services/utils.service';
 import { AddUpdateProductComponent } from 'src/app/shared/components/add-update-product/add-update-product.component';
 import { orderBy, where } from 'firebase/firestore';
 import * as pdfMake from 'pdfmake/build/pdfmake';
-import * as pdfFonts from 'pdfmake/build/vfs_fonts';
-import { Subscription } from 'rxjs';
+// import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+// import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
+
 }) export class HomePage implements OnInit {
+  
   firebaseSvc = inject(FirebaseService);
   utilsSvc = inject(UtilsService);
   pdfMake = inject(UtilsService).pdfMake();
-
   products: Product[] = [];
   displayedProducts: Product[] = [];
   loading: boolean = false;
@@ -32,14 +33,17 @@ import { Subscription } from 'rxjs';
     this.getProducts();
   }
 
+  // === Obtener usuario ===
   user(): User {
     return this.utilsSvc.getFromLocalStorage('user');
   }
 
+  // === Cargar vista ===
   ionViewWillEnter() {
     this.getProducts();
   }
 
+  // === Refrescar ===
   doRefresh(event) {
     setTimeout(() => {
       this.getProducts();
@@ -47,10 +51,12 @@ import { Subscription } from 'rxjs';
     }, 1000);
   }
 
+  // === Obtener Ganancias Total ===
   getProfits() {
     return this.products.reduce((index, product) => index + product.price * product.soldUnits, 0)
   }
 
+  // === Obtener Productos ===
   getProducts() {
     let path = `users/${this.user().uid}/product`;
     this.loading = true;
@@ -67,13 +73,14 @@ import { Subscription } from 'rxjs';
       }
     });
   }
-  // === Paginación ===
+  // === Mostrar Productos por Pagina ===
   updateDisplayedProducts() {
     const start = (this.currentPage - 1) * this.pageSize;
     const end = start + this.pageSize;
     this.displayedProducts = this.products.slice(start, end);
   }
 
+  // === Paginación ===
   updatePagination() {
     const totalPages = Math.ceil(this.products.length / this.pageSize);
     let startPage = Math.max(1, this.currentPage - 2);
@@ -86,6 +93,7 @@ import { Subscription } from 'rxjs';
     this.pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
   }
 
+  // === Ir a una pagina ===
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
@@ -94,10 +102,12 @@ import { Subscription } from 'rxjs';
     }
   }
 
+  // === Pagina Siguiente ===
   nextPage() {
     this.goToPage(this.currentPage + 1);
   }
 
+  // === Pagina Anterior ===
   prevPage() {
     this.goToPage(this.currentPage - 1);
   }
@@ -121,11 +131,6 @@ import { Subscription } from 'rxjs';
     });
 
   }
-
-
-
-
-
 
   // ====== Agregar o actualizar producto =========
   async addUpdateProduct(product?: Product) {
@@ -178,6 +183,7 @@ import { Subscription } from 'rxjs';
     })
   }
 
+  // === Generar PDF ===
   generatePDF(product?: Product) {
     let docDefinition: any;
 
@@ -195,6 +201,7 @@ import { Subscription } from 'rxjs';
     pdfMake.createPdf(docDefinition).open();
   }
 
+  // === Generar PDF por un solo producto ===
   private getSingleProductPdfDefinition(product: Product): any {
     return {
       content: [
@@ -225,8 +232,7 @@ import { Subscription } from 'rxjs';
     };
   }
 
-
-
+ // === Generar PDF de todos los Productos ===
   private getAllProductsPdfDefinition(): any {
     const tableBody = [
       ['N*', 'Nombre', 'Precio', 'Unidades Vendidas', 'Ganancias Vendidas']

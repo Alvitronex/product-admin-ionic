@@ -1,102 +1,80 @@
-<app-header [showMenu]="true" title="Administracion de usuarios"></app-header>
+<app-header [showMenu]="true" title="Panel de Usuarios"></app-header>
+
 <ion-content>
-  <div class="d-flex-center">
-    <form
-      [formGroup]="form"
-      class="auth-form"
-      (ngSubmit)="submit()"
-      (keypress.enter)="submit()"
-    >
-      <style>
-        .shield-icon {
-          font-size: 80px;
-          margin-top: 40px;
-        }
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
-        h1 {
-          margin-top: 0;
-        }
-      </style>
+  <!-- ======= Usuarios ======= -->
+  <ion-list *ngIf="users.length > 0">
+    <ion-item-sliding class="user-item" *ngFor="let user of displayedUsers">
+      <ion-item>
+        <ion-avatar slot="start">
+          <img [src]="user.image || 'assets/default-avatar.png'" />
+        </ion-avatar>
+        <ion-label>
+          <h2>{{user.name}}</h2>
+          <p>{{user.email}}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item-options side="end">
+        <ion-item-option (click)="addUpdateUser(user)" color="primary">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-item-option>
+        <!-- <ion-item-option (click)="confirmDeleteUser(user)" color="danger">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-item-option> -->
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
 
-      <!--============ Logo ======== -->
-      <ion-icon
-        class="shield-icon"
-        color="primary"
-        name="shield-outline"
-      ></ion-icon>
+  <!-- ======= Paginador ======= -->
+  <ion-grid *ngIf="users.length > 0">
+    <ion-row class="ion-justify-content-center">
+      <ion-col size="auto">
+        <ion-button
+          fill="clear"
+          (click)="prevPage()"
+          [disabled]="currentPage === 1"
+        >
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+      <ion-col size="auto" *ngFor="let page of pages">
+        <ion-button
+          fill="clear"
+          [color]="page === currentPage ? 'primary' : 'medium'"
+          (click)="goToPage(page)"
+        >
+          {{ page }}
+        </ion-button>
+      </ion-col>
+      <ion-col size="auto">
+        <ion-button
+          fill="clear"
+          (click)="nextPage()"
+          [disabled]="currentPage === totalPages"
+        >
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 
-      <ion-text color="primary">
-        <h1><strong>Admin</strong>App</h1>
-      </ion-text>
-      <!--============ Name ======== -->
-      <app-custom-input
-        autocomplete="name"
-        icon="person-outline"
-        [control]="form.controls.name"
-        type="text"
-        label="Nombre"
-      ></app-custom-input>
-
-      <div
-        class="validators"
-        *ngIf="form.controls.name.errors && form.controls.name.touched"
-      >
-        <div *ngIf="form.controls.name.errors?.['required']">
-          Este campo es requerido
-        </div>
-        <div *ngIf="form.controls.name.errors?.['minlength']">
-          El nombre debe tener al menos 4 caracteres
-        </div>
-      </div>
-
-      <!--============ Email ======== -->
-      <app-custom-input
-        autocomplete="email"
-        icon="mail-outline"
-        [control]="form.controls.email"
-        type="email"
-        label="Correo"
-      ></app-custom-input>
-
-      <div
-        class="validators"
-        *ngIf="form.controls.email.errors && form.controls.email.touched"
-      >
-        <div *ngIf="form.controls.email.errors?.['required']">
-          El correo es requerido
-        </div>
-        <div *ngIf="form.controls.email.errors?.['email']">
-          Ingrese un correo valido
-        </div>
-      </div>
-
-      <!--============ Password ======== -->
-      <app-custom-input
-        [control]="form.controls.password"
-        icon="lock-closed-outline"
-        type="password"
-        label="Contraseña"
-      ></app-custom-input>
-
-      <div
-        class="validators"
-        *ngIf="form.controls.password.errors && form.controls.password.touched"
-      >
-        <div *ngIf="form.controls.password.errors?.['required']">
-          La contraseña es requerida
-        </div>
-      </div>
-
-      <ion-button
-        expand="block"
-        mode="ios"
-        class="submit"
-        type="submit"
-        [disabled]="form.invalid"
-      >
-        Crear Usuario
-        <ion-icon slot="end" name="person-add-outline"></ion-icon>
-      </ion-button>
-    </form>
+  <!-- ======= Sin Usuarios disponibles======= -->
+  <div *ngIf="!loading && !users.length" class="empty">
+    <ion-icon name="people-outline"></ion-icon>
+    <h3>No hay usuarios disponibles</h3>
   </div>
+
+  <!-- ======= Loader ======= -->
+  <div *ngIf="loading" class="ion-text-center">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" style="right: 25px">
+    <ion-fab-button (click)="addUpdateUser()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

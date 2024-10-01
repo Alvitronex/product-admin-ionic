@@ -5,6 +5,8 @@ import { FirebaseService } from 'src/app/services/firebase.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { AddUpdateUserComponent } from 'src/app/shared/components/add-update-user/add-update-user.component';
+import { orderBy, where } from 'firebase/firestore';
 
 @Component({
   selector: 'app-panel',
@@ -22,9 +24,84 @@ export class PanelPage implements OnInit {
 
   firebaseSvc = inject(FirebaseService);
   utilsSvc = inject(UtilsService);
+  displayedUsers: User[] = [];
+  users: User[] = [];
 
-  ngOnInit() {
+  pageSize: number = 10;
+  currentPage: number = 1;
+  totalPages: number = 1;
+  pages: number[] = [];
+  loading: boolean = false;
+
+  user(): User {
+    return this.utilsSvc.getFromLocalStorage('user');
   }
+  ngOnInit() {
+    this.getUsers();
+  }
+
+  ionViewWillEnter() {
+    this.getUsers();
+  }
+
+  doRefresh(event) {
+    setTimeout(() => {
+      this.getUsers();
+      event.target.complete();
+    }, 1000);
+  }
+  getUsers() {
+    let path = `users`;
+    // this.loading = true;
+
+    let query = [orderBy('name', 'asc')];
+
+    this.firebaseSvc.getCollectionData(path, query).subscribe({
+      next: (res: any) => {
+        this.users = res;
+        this.totalPages = Math.ceil(this.users.length / this.pageSize);
+        this.updateDisplayedUsers();
+        this.updatePagination();
+        this.loading = false;
+      }
+    });
+  }
+
+
+  updateDisplayedUsers() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.displayedUsers = this.users.slice(start, end);
+  }
+
+  updatePagination() {
+    const totalPages = Math.ceil(this.users.length / this.pageSize);
+    let startPage = Math.max(1, this.currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    this.pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updateDisplayedUsers();
+      this.updatePagination();
+    }
+  }
+
+  nextPage() {
+    this.goToPage(this.currentPage + 1);
+  }
+
+  prevPage() {
+    this.goToPage(this.currentPage - 1);
+  }
+
 
   async submit() {
     if (this.form.valid) {
@@ -69,6 +146,18 @@ export class PanelPage implements OnInit {
         loading.dismiss();
       }
     }
+  }
+
+
+  async addUpdateUser(user?: User) {
+
+    let success = await this.utilsSvc.presentModal({
+      component: AddUpdateUserComponent,
+      cssClass: 'add-update-modal',
+      componentProps: { user }
+    })
+
+    if (success) this.getUsers();
   }
 
   async setUserInfo(uid: string) {
